@@ -15,10 +15,8 @@ export const ChartStockSelector = ({
 }: ChartStockSelectorProps) => {
   const handleToggle = (symbol: string) => {
     if (selectedStocks.includes(symbol)) {
-      // Remove from selection
       onSelectionChange(selectedStocks.filter((s) => s !== symbol));
     } else {
-      // Add to selection if under max
       if (selectedStocks.length < maxSelection) {
         onSelectionChange([...selectedStocks, symbol]);
       }

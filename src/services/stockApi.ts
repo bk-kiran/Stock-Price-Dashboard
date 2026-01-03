@@ -9,7 +9,6 @@ const DEFAULT_SYMBOLS = [
   'BAC', 'XOM', 'CVX', 'UNH'
 ];
 
-// Fetch company profile to get the full company name
 export const fetchCompanyProfile = async (symbol: string): Promise<string | null> => {
   try {
     const response = await fetch(
@@ -21,7 +20,7 @@ export const fetchCompanyProfile = async (symbol: string): Promise<string | null
     }
     
     const data = await response.json();
-    return data.name || null; // Returns company name like "Apple Inc"
+    return data.name || null; 
   } catch (error) {
     console.warn(`Could not fetch company name for ${symbol}:`, error);
     return null;
@@ -51,9 +50,6 @@ export const fetchStockQuote = async (symbol: string, includeCompanyName: boolea
     }
     
     // Check if we have valid price data
-    // Finnhub returns c: null when market is closed or data unavailable
-    // For now, we'll still return the stock with price 0 so it shows in the table
-    // Users can see which stocks are available even if market is closed
     if (data.c === null || data.c === undefined) {
       console.warn(`⚠️ No price data for ${symbol} (market may be closed) - showing with $0.00`);
       // Return stock with 0 price instead of null so it still appears
@@ -68,7 +64,6 @@ export const fetchStockQuote = async (symbol: string, includeCompanyName: boolea
     
     console.log(`✅ Successfully loaded ${symbol}: $${data.c}`);
     
-    // Optionally fetch company name (adds an extra API call)
     let companyName: string | undefined;
     if (includeCompanyName) {
       companyName = (await fetchCompanyProfile(symbol)) || undefined;
@@ -80,7 +75,7 @@ export const fetchStockQuote = async (symbol: string, includeCompanyName: boolea
       change: data.d || 0, // change
       changePercent: data.dp || 0, // change percent
       timestamp: data.t || Date.now(),
-      companyName, // e.g., "Apple Inc" for AAPL
+      companyName,
     };
   } catch (error) {
     console.error(`❌ Network/Error fetching quote for ${symbol}:`, error);
@@ -89,8 +84,6 @@ export const fetchStockQuote = async (symbol: string, includeCompanyName: boolea
 };
 
 export const fetchMultipleStockQuotes = async (symbols: string[], includeCompanyNames: boolean = false): Promise<StockData[]> => {
-  // Note: Setting includeCompanyNames=true will double API calls (quote + profile per stock)
-  // This could hit rate limits faster. Use sparingly or fetch names separately.
   console.log(`📊 Fetching quotes for ${symbols.length} stocks...`);
   const promises = symbols.map(symbol => fetchStockQuote(symbol, includeCompanyNames));
   const results = await Promise.all(promises);
@@ -100,7 +93,7 @@ export const fetchMultipleStockQuotes = async (symbols: string[], includeCompany
   const stocksWithPrice = validStocks.filter(s => s.price > 0).length;
   const stocksWithZeroPrice = validStocks.filter(s => s.price === 0).length;
   
-  // Log summary for debugging
+  // Debugging
   if (validStocks.length === 0 && symbols.length > 0) {
     console.warn(`⚠️ No valid stock data received for ${symbols.length} symbols. Check browser console for details.`);
     console.warn(`API Key being used: ${FINNHUB_API_KEY === 'demo' ? 'demo (limited)' : 'custom key'}`);
@@ -116,8 +109,6 @@ export const fetchMultipleStockQuotes = async (symbols: string[], includeCompany
   return validStocks;
 };
 
-// Fetch company names separately to avoid doubling API calls on initial load
-// Call this after initial stock data is loaded
 export const enrichStocksWithCompanyNames = async (stocks: StockData[]): Promise<StockData[]> => {
   // Add a small delay between requests to avoid rate limiting
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -133,7 +124,6 @@ export const enrichStocksWithCompanyNames = async (stocks: StockData[]): Promise
     }
     
     try {
-      // Add small delay to avoid hitting rate limits (60 calls/min = 1 call per second max)
       if (i > 0) {
         await delay(1100); // 1.1 seconds between calls to stay under 60/min
       }
@@ -141,7 +131,6 @@ export const enrichStocksWithCompanyNames = async (stocks: StockData[]): Promise
       const companyName = await fetchCompanyProfile(stock.symbol);
       enrichedStocks.push({ ...stock, companyName: companyName || undefined });
     } catch (error) {
-      // If fetching company name fails, just use the stock without the name
       console.warn(`Failed to fetch company name for ${stock.symbol}:`, error);
       enrichedStocks.push(stock);
     }

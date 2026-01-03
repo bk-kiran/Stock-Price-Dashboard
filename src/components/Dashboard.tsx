@@ -7,7 +7,6 @@ import { ChartStockSelector } from './ChartStockSelector';
 import { QuickStockView } from './QuickStockView';
 import { Loading } from './Loading';
 import { Error } from './Error';
-// import { enrichStocksWithCompanyNames } from '../services/stockApi'; // Uncomment if enabling company names
 
 type SortField = keyof StockData;
 type SortDirection = 'asc' | 'desc';
@@ -72,20 +71,6 @@ export const Dashboard = () => {
             stockData.some((stock) => stock.symbol === symbol)
           );
         });
-        
-        // Fetch company names for tooltips (disabled by default to avoid rate limits)
-        // Uncomment below to enable - but be aware: 20 stocks = 20 extra API calls
-        // With 20 stocks refreshing every 30s, this could hit rate limits
-        // Better to fetch names only once on initial load, not on every refresh
-        
-        // OPTIONAL: Enable company names (uncomment to enable)
-        // enrichStocksWithCompanyNames(stockData).then((enriched) => {
-        //   setStocks(enriched);
-        //   setFilteredStocks(enriched);
-        // }).catch((err) => {
-        //   console.warn('Could not fetch company names (non-critical):', err);
-        //   // Continue without company names - not critical
-        // });
       }
     } catch (err: unknown) {
       setError(getErrorMessage(err));
@@ -196,7 +181,6 @@ export const Dashboard = () => {
           )}
         </div>
 
-        {/* Search and Controls */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex-1 w-full sm:max-w-md">
             <div className="relative">
@@ -281,7 +265,6 @@ export const Dashboard = () => {
           />
         )}
 
-        {/* Error Banner (if error but we have some data) */}
         {error && stocks.length > 0 && (
           <div className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <div className="flex items-center">
@@ -368,7 +351,6 @@ export const Dashboard = () => {
           />
         </div>
 
-        {/* Footer Info */}
         <div className="mt-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700">
             <svg className="w-4 h-4 text-green-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
